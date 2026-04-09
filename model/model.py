@@ -1,5 +1,6 @@
 from database.DAO import DAO
 
+# Nota. Il Model non sa le cose… E' un semplice passacarte! Chiede al DAO!
 
 class Model:
     def __init__(self):

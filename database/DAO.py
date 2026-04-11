@@ -64,17 +64,36 @@ class DAO():
     @staticmethod
     def getCorsiPD(pd):
         cnx = DBConnect.get_connection()
+        # Creo un oggetto cursore che uso per fare (eseguire) le query e mi restituisce dizionari.
+        # Oltre a ciò il cursore riceve le righe dal DB e me ne dà una alla volta nel ciclo for che segue
         cursor = cnx.cursor(dictionary=True)
+        # dictionary=TRUE significa che ogni riga dal DB verrà rappresentata come un dizionario in Python,
+        # ovvero una cosa del genere:
+        # {
+        #     "codins": 101,
+        #     "nome": "Analisi 1",
+        #     "pd": 1
+        # }
+        # Ciò è fondamentale perché dopo posso fare l'unpacking del dizionario nei parametri del costruttore
 
-        query = """SELECT *
+        query = """ SELECT *
                     FROM corso c
                     WHERE c.pd = %s"""
 
         cursor.execute(query, (pd,))
+        # Esegue la query. Per eseguire la query il cursore devo passargli una tupla di parametri
 
         res = []
+        # Con questo ciclo for scorro le righe della tabella corso
         for row in cursor:
-            res.append(Corso(**row))
+            res.append(Corso(**row))    # UNPACKING del dizionario nei parametri del costruttore
+            # Con questa riga di codice salvo in res le varie righe (row)
+
+        # Nota. In getAllCorsi() esplicito tutti i paremetri del oggetto Corso.
+        #       Però, se ho l'accortezza di dare ai nomi degli attributi dell'oggetto DTO (qui Corso)
+        #       lo stesso nome delle rispettive colonne nel database,
+        #       allora posso fare direttamente l'unpackong della riga, e qui ho fatto così.
+        #       Questo semplifica la scrittura del costruttore.
 
         cursor.close()
         cnx.close()
@@ -102,7 +121,8 @@ class DAO():
                                 nome = row["nome"],
                                 pd = row["pd"]),
                          row["n"] ))
-
+        # Questa volta il risultato è una tupla Corso e numero di iscritti n a quel Corso.
+        # Dove n lo prendo come row di n e i parametri di Corso li leggo in maniera esplicita.
         cursor.close()
         cnx.close()
         return res
@@ -123,8 +143,8 @@ class DAO():
 
         res = []
         for row in cursor:
-            res.append(Studente(**row))
-
+            res.append(Studente(**row))     # UNPACKING del dizionario nei parametri del costruttore
+            # Qui uso il DTO Studente
         cursor.close()
         cnx.close()
         return res

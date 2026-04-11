@@ -11,39 +11,59 @@ class Controller:
         self._model = Model()
         self._ddCodinsValue = None
 
+
+
     def handlePrintCorsiPD(self, e):
         # Questo metodo ha come argomento l'evento "e".
         # L'evento "e" è generato dalla pressione del rispetto pulsante (del View) fatta dall'utente.
 
+        # Questo metodo deve recuperare dall'interfaccia grafica qual è il periodo didattico scelto dall'utente,
+        # poi fare la query al database tramite il Model e poi stampare i dati.
+
         self._view.txt_result.controls.clear()
 
+        # Per prima cosa recupero il periodo didattico scelto dall'utente tramite il corrispettivo Dropdown.
+        # Però, questo periodo didattico sarà la stringa I o II, ma nella query devo passare un valore intero 1 o 2.
+        # Dunque, verifico il valore di pd (in stringhe) e lo converto in interi.
         pd = self._view.ddPD.value
 
+        # Può succedere che pd sia None, ovvero l'utente non ha fatto nessuna scelta nel Dropdown.
+        # In tal caso lo dico all'utente. Lo si può fare con un messaggio, ma dato che ho creato
+        # un metodo create_alert() nel View uso tale metodo (per il Prof non è l'approccio da usare,
+        # perché vado ad aggiungere complessità).
         if pd is None:
             (self._view.create_alert
              ("Attenzione, selezionare un periodo didattico."))
-            self._view.update_page()
+            self._view.update_page()    # Aggiorno la pagina
             return
 
         if pd == "I":
             pdInt = 1
         else: pdInt = 2
 
+        # A questo punto ho tutto per poter fare la query.
+
         corsiPD = self._model.getCorsiPD(pdInt)
+        # getCorsiPD() è un metodo del Model (che accetta il parametro pdInt) che va a chiedere al DAO
+        # di fare la query (dal punto di vista del Controller questa cosa non è importante).
+
+        # corsiPD è una lista.
+        # Può succedere che questa lista sia vuota, ad esempio se la mia query non ha ottenuto risultati.
 
         if not len(corsiPD):
-            self._view.txt_result.controls.append(
-                ft.Text(f"Nessun corso trovato per il {pd} periodo didattico."))
+            self._view.txt_result.controls.append(ft.Text(f"Nessun corso trovato per il {pd} periodo didattico."))
             self._view.update_page()
             return
 
+        # Altrimenti vuol dire che corsiPD conterrà una lista di corsi. Così ciclo su questa lista di corsi e la stampo.
+        # La stampa sfrutta il metodo __str__ dell'oggetto Corso, che ho scritto appositamente.
         self._view.txt_result.controls.append(
             ft.Text(f"Di seguito i corsi del {pd} periodo didattico:"))
         for c in corsiPD:
-            self._view.txt_result.controls.append(
-                ft.Text(c)
-            )
+            self._view.txt_result.controls.append(ft.Text(c))
         self._view.update_page()
+
+
 
     def handlePrintIscrittiCorsiPD(self, e):
         self._view.txt_result.controls.clear()
@@ -75,28 +95,40 @@ class Controller:
             self._view.txt_result.controls.append(
                 ft.Text(f"{c[0]} -- N Iscritti: {c[1]}")
             )
+        # corsi è una lista. In handlePrintCorsiPD() la lista corsiPD contiene degli oggetti di tipo Corso e quando
+        # la stampo sfrutto il metodo __str__ dell'oggetto Corso, che ho scritto appositamente.
+        # Qui, la lista corsi contiene tuple: corso + iscritti al quel corso. Dunque, non avendo un __str__
+        # definito ad hoc modifico la stampa.
         self._view.update_page()
+
+
 
     def handlePrintIscrittiCodins(self, e):
         self._view.txt_result.controls.clear()
-
+        # self._ddCodinsValue è un oggetto di tipo Corso, che ha fra gli attributi codins.
+        # self._ddCodinsValue è una variabile d'appoggio che mi sono creato in _choiceDDCodins nel Controller,
+        # è un modo diverso di ottenere il valore del corrispettivo Dropdown
         if self._ddCodinsValue is None:
             self._view.create_alert("Per favore selezionare un insegnamento.")
             self._view.update_page()
             return
 
-        #se arriviamo qui, posso recuperare gli studenti
+        #Se arrivo qui, posso recuperare gli studenti
         studenti = self._model.getStudentiCorso(self._ddCodinsValue.codins)
+        # studenti è una lista
 
+        # Se la lista studenti è vuota lo dico all'utente
         if not len(studenti):
             self._view.txt_result.controls.append(
                 ft.Text("Nessuno studente iscritto a questo corso."))
             self._view.update_page()
             return
 
+        # Se invece la lista studenti non è vuota la stampo
         self._view.txt_result.controls.append(
             ft.Text(f"Di seguito gli studenti iscritti al corso {self._ddCodinsValue}")
         )
+        # Vado a stampare gli studenti (usando __str__ di Studente) contenuti nella lista studenti
         for s in studenti:
             self._view.txt_result.controls.append(
                 ft.Text(s)

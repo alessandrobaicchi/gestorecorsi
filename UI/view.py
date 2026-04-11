@@ -77,8 +77,11 @@ class View(ft.UserControl):
 
         # List View where the reply is printed
         self.txt_result = ft.ListView(expand=1, spacing=10, padding=20, auto_scroll=True)
+        # Qui ho creato una ListView --> un'area dove stamperò testi, messaggi, output.
         self._page.controls.append(self.txt_result)
+        # Qui aggiungo la ListView appena creata alla pagina.
         self._page.update()
+        # Qui faccio il refresh della pagina perché "ho aggiunto qualcosa alla pagina".
 
     @property
     def controller(self):
